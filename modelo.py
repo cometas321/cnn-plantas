@@ -182,3 +182,55 @@ plt.yticks(range(len(class_names)), class_names)
 plt.ylabel('True label')
 plt.xlabel('Predicted label')
 plt.show()
+
+# ##### Evaluación final en test set
+test_loss, test_acc = model.evaluate(test_ds)
+print(f"Test loss: {test_loss:.4f}, Test accuracy: {test_acc:.4f}")
+
+#Matriz de confusión y reporte por clase
+
+import numpy as np
+from sklearn.metrics import confusion_matrix, classification_report
+
+# Obtener etiquetas verdaderas y predichas
+y_true = []
+y_pred = []
+for images, labels in test_ds:
+    preds = model.predict(images)
+    y_true.extend(labels.numpy())
+    y_pred.extend(np.argmax(preds, axis=1))
+
+y_true = np.array(y_true)
+y_pred = np.array(y_pred)
+
+cm = confusion_matrix(y_true, y_pred)
+print("Classification report:\n", classification_report(y_true, y_pred, target_names=class_names))
+print("Confusion matrix:\n", cm)
+
+# Mostrar matriz como imagen
+plt.figure(figsize=(8,6))
+plt.imshow(cm, interpolation='nearest')
+plt.title('Matriz de confusión')
+plt.colorbar()
+plt.xticks(range(len(class_names)), class_names, rotation=45)
+plt.yticks(range(len(class_names)), class_names)
+plt.ylabel('True label')
+plt.xlabel('Predicted label')
+plt.show()
+
+from tensorflow.keras.preprocessing import image
+import numpy as np
+import tensorflow as tf
+
+def predict_image(model, img_path, class_names, image_size=(128,128)):
+    img = image.load_img(img_path, target_size=image_size)
+    x = image.img_to_array(img)
+    x = x.astype('float32') / 255.0
+    x = np.expand_dims(x, axis=0)
+    preds = model.predict(x)[0]
+    top_idx = np.argmax(preds)
+    return top_idx, preds[top_idx], preds
+
+# Uso:
+idx, prob, all_probs = predict_image(model, "probar.jpg", class_names)
+print(class_names[idx], prob)
